@@ -1,29 +1,50 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Play, Star } from 'lucide-react';
 import { Film } from '@/data/films';
+import VideoModal from './VideoModal';
 
 interface FilmCardProps {
   film: Film;
 }
 
 const FilmCard: React.FC<FilmCardProps> = ({ film }) => {
+  const [showTrailer, setShowTrailer] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  const handlePlayClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowTrailer(true);
+  };
+
   return (
-    <Link to={`/film/${film.id}`} className="group block flex-shrink-0 w-40 md:w-48 lg:w-56">
+    <>
+      <Link to={`/film/${film.id}`} className="group block flex-shrink-0 w-40 md:w-48 lg:w-56">
       <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-card shadow-lg transition-transform duration-300 group-hover:scale-105 group-hover:shadow-2xl group-hover:shadow-primary/20">
         {/* Poster Image */}
-        <img
-          src={film.posterUrl}
-          alt={film.title}
-          className="w-full h-full object-cover"
-        />
+        {!imageError ? (
+          <img
+            src={film.posterUrl}
+            alt={film.title}
+            className="w-full h-full object-cover"
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-secondary to-card flex items-center justify-center p-4">
+            <p className="text-center text-sm text-muted-foreground font-medium">{film.title}</p>
+          </div>
+        )}
         
         {/* Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
         {/* Play Button */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <div className="w-14 h-14 rounded-full bg-primary/90 flex items-center justify-center shadow-lg shadow-primary/50">
+        <div
+          className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+          onClick={handlePlayClick}
+        >
+          <div className="w-14 h-14 rounded-full bg-primary/90 flex items-center justify-center shadow-lg shadow-primary/50 hover:bg-primary transition-colors">
             <Play className="w-6 h-6 text-primary-foreground ml-1" fill="currentColor" />
           </div>
         </div>
@@ -48,6 +69,15 @@ const FilmCard: React.FC<FilmCardProps> = ({ film }) => {
         {film.genre.slice(0, 2).join(' • ')}
       </p>
     </Link>
+
+    {/* Video Modal */}
+    <VideoModal
+      isOpen={showTrailer}
+      title={`${film.title} - Trailer`}
+      videoUrl={film.trailerUrl}
+      onClose={() => setShowTrailer(false)}
+    />
+    </>
   );
 };
 

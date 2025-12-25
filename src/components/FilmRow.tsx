@@ -30,17 +30,17 @@ const FilmRow: React.FC<FilmRowProps> = ({ title, films }) => {
           {title}
         </h2>
         
-        <div className="relative group">
+        <div className="relative">
           {/* Scroll Buttons */}
           <button
             onClick={() => scroll('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-background/80 backdrop-blur-sm text-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background shadow-lg -ml-4"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-background/80 backdrop-blur-sm text-foreground opacity-0 hover:opacity-100 transition-opacity hover:bg-background shadow-lg -ml-4"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
           <button
             onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-background/80 backdrop-blur-sm text-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background shadow-lg -mr-4"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-background/80 backdrop-blur-sm text-foreground opacity-0 hover:opacity-100 transition-opacity hover:bg-background shadow-lg -mr-4"
           >
             <ChevronRight className="w-6 h-6" />
           </button>

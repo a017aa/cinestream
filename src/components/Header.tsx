@@ -28,13 +28,12 @@ const Header: React.FC = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            <Link to="/" className="text-foreground/80 hover:text-primary transition-colors">
-              Home
-            </Link>
-            <Link to="/premium" className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1">
-              <Crown className="w-4 h-4" />
-              Premium
-            </Link>
+            {!user?.isPremium && (
+              <Link to="/premium" className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1">
+                <Crown className="w-4 h-4" />
+                Premium
+              </Link>
+            )}
           </nav>
 
           {/* Right Side Actions */}
@@ -56,15 +55,10 @@ const Header: React.FC = () => {
             {/* Auth Buttons */}
             {isAuthenticated ? (
               <div className="hidden md:flex items-center gap-3">
-                <div className="flex items-center gap-2 text-foreground/80">
+                <Link to="/account" className="flex items-center gap-2 text-foreground/80 hover:text-primary transition-colors">
                   <User className="w-4 h-4" />
                   <span className="text-sm">{user?.username}</span>
-                  {user?.isPremium && (
-                    <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-medium">
-                      {user.premiumPlan}
-                    </span>
-                  )}
-                </div>
+                </Link>
                 <Button variant="ghost" size="sm" onClick={handleLogout}>
                   <LogOut className="w-4 h-4 mr-1" />
                   Logout
@@ -75,7 +69,7 @@ const Header: React.FC = () => {
                 <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>
                   Log In
                 </Button>
-                <Button variant="hero" size="sm" onClick={() => navigate('/login')}>
+                <Button variant="hero" size="sm" onClick={() => navigate('/login?mode=signup')}>
                   Sign Up
                 </Button>
               </div>
@@ -97,32 +91,25 @@ const Header: React.FC = () => {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-border/50 animate-fade-in">
             <nav className="flex flex-col gap-4">
-              <Link 
-                to="/" 
-                className="text-foreground/80 hover:text-primary transition-colors py-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Home
-              </Link>
-              <Link 
-                to="/premium" 
-                className="text-foreground/80 hover:text-primary transition-colors py-2 flex items-center gap-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <Crown className="w-4 h-4" />
-                Premium
-              </Link>
+              {!user?.isPremium && (
+                <Link 
+                  to="/premium" 
+                  className="text-foreground/80 hover:text-primary transition-colors py-2 flex items-center gap-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Crown className="w-4 h-4" />
+                  Premium
+                </Link>
+              )}
               {isAuthenticated ? (
                 <>
                   <div className="flex items-center gap-2 text-foreground/80 py-2">
                     <User className="w-4 h-4" />
                     <span>{user?.username}</span>
-                    {user?.isPremium && (
-                      <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-medium">
-                        {user.premiumPlan}
-                      </span>
-                    )}
                   </div>
+                  <Link to="/account" onClick={() => setIsMenuOpen(false)} className="text-foreground/80 hover:text-primary transition-colors py-2">
+                    View Account
+                  </Link>
                   <Button variant="outline" onClick={handleLogout}>
                     <LogOut className="w-4 h-4 mr-2" />
                     Logout
@@ -133,7 +120,7 @@ const Header: React.FC = () => {
                   <Button variant="outline" onClick={() => { navigate('/login'); setIsMenuOpen(false); }}>
                     Log In
                   </Button>
-                  <Button variant="hero" onClick={() => { navigate('/login'); setIsMenuOpen(false); }}>
+                  <Button variant="hero" onClick={() => { navigate('/login?mode=signup'); setIsMenuOpen(false); }}>
                     Sign Up
                   </Button>
                 </div>

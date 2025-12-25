@@ -13,9 +13,10 @@ interface PlanProps {
   icon: React.ReactNode;
   features: string[];
   isPopular?: boolean;
+  isActive?: boolean;
 }
 
-const PlanCard: React.FC<PlanProps> = ({ name, price, duration, icon, features, isPopular }) => {
+const PlanCard: React.FC<PlanProps> = ({ name, price, duration, icon, features, isPopular, isActive }) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
@@ -29,18 +30,21 @@ const PlanCard: React.FC<PlanProps> = ({ name, price, duration, icon, features, 
 
   return (
     <div className={`relative p-6 md:p-8 rounded-2xl ${
-      isPopular 
+      isActive
+        ? 'bg-gradient-to-b from-primary/20 to-card border-2 border-primary shadow-xl shadow-primary/20'
+        : isPopular 
         ? 'bg-gradient-to-b from-primary/20 to-card border-2 border-primary shadow-xl shadow-primary/20' 
         : 'bg-card border border-border'
     }`}>
-      {isPopular && (
+      {/* removed Current Plan badge per design request */}
+      {isPopular && !isActive && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-primary-foreground text-sm font-medium">
           Most Popular
         </div>
       )}
       
       <div className="flex items-center gap-3 mb-4">
-        <div className={`p-3 rounded-xl ${isPopular ? 'bg-primary/20' : 'bg-secondary'}`}>
+        <div className={`p-3 rounded-xl ${isActive || isPopular ? 'bg-primary/20' : 'bg-secondary'}`}>
           {icon}
         </div>
         <h3 className="font-display text-2xl text-foreground">{name}</h3>
@@ -61,22 +65,25 @@ const PlanCard: React.FC<PlanProps> = ({ name, price, duration, icon, features, 
       </ul>
       
       <Button 
-        variant={isPopular ? 'hero' : 'outline'} 
+        variant={isActive ? 'secondary' : isPopular ? 'hero' : 'outline'} 
         className="w-full"
         onClick={handleSubscribe}
+        disabled={isActive}
       >
-        Subscribe Now
+        {isActive ? 'Subscribed' : 'Subscribe Now'}
       </Button>
     </div>
   );
 };
 
 const Premium: React.FC = () => {
+  const { isAuthenticated, user } = useAuth();
+
   const plans: PlanProps[] = [
     {
       name: 'Student',
-      price: '5.99',
-      duration: '1 month',
+      price: '4.99',
+      duration: 'Monthly',
       icon: <Zap className="w-6 h-6 text-primary" />,
       features: [
         'Access to all movies',
@@ -88,8 +95,8 @@ const Premium: React.FC = () => {
     },
     {
       name: 'Individual',
-      price: '16.99',
-      duration: '3 months',
+      price: '9.99',
+      duration: 'Monthly',
       icon: <Crown className="w-6 h-6 text-primary" />,
       features: [
         'Access to all movies',
@@ -103,8 +110,8 @@ const Premium: React.FC = () => {
     },
     {
       name: 'Family',
-      price: '34.99',
-      duration: 'lifetime',
+      price: '15.99',
+      duration: 'Monthly',
       icon: <Heart className="w-6 h-6 text-primary" />,
       features: [
         'Access to all movies',
@@ -118,8 +125,8 @@ const Premium: React.FC = () => {
     },
     {
       name: 'Duo',
-      price: '59.99',
-      duration: 'lifetime',
+      price: '12.99',
+      duration: 'Monthly',
       icon: <Users className="w-6 h-6 text-primary" />,
       features: [
         'Everything in Family',
@@ -142,22 +149,25 @@ const Premium: React.FC = () => {
       <div className="min-h-screen bg-background">
         <Header />
 
+        {/* Active Membership section removed per request */}
+
         {/* Hero Section */}
         <section className="pt-32 pb-16 md:pt-40 md:pb-24">
           <div className="container mx-auto px-4 text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 text-primary mb-6">
               <Crown className="w-5 h-5" />
-              <span className="font-medium">Premium Membership</span>
+              <span className="font-medium">{isAuthenticated && user?.isPremium ? 'Upgrade Plan' : 'Premium Membership'}</span>
             </div>
             
             <h1 className="font-display text-4xl md:text-6xl lg:text-7xl text-foreground mb-6">
-              Unlock Unlimited
-              <span className="block text-primary">Entertainment</span>
+              {isAuthenticated && user?.isPremium ? 'Upgrade Your' : 'Unlock Unlimited'}
+              <span className="block text-primary">{isAuthenticated && user?.isPremium ? 'Membership' : 'Entertainment'}</span>
             </h1>
             
             <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto mb-8">
-              Get access to thousands of movies, exclusive content, and premium features 
-              with our flexible subscription plans.
+              {isAuthenticated && user?.isPremium 
+                ? 'Switch to a higher tier for more features and benefits'
+                : 'Get access to thousands of movies, exclusive content, and premium features with our flexible subscription plans.'}
             </p>
           </div>
         </section>
@@ -167,7 +177,11 @@ const Premium: React.FC = () => {
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
               {plans.map((plan) => (
-                <PlanCard key={plan.name} {...plan} />
+                <PlanCard 
+                  key={plan.name} 
+                  {...plan}
+                  isActive={isAuthenticated && user?.isPremium && user?.premiumPlan?.toLowerCase() === plan.name.toLowerCase()}
+                />
               ))}
             </div>
           </div>

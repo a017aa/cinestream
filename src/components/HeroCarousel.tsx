@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Play, Info, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
+import VideoModal from './VideoModal';
 import { getFeaturedFilms, Film } from '@/data/films';
 
 const HeroCarousel: React.FC = () => {
   const featuredFilms = getFeaturedFilms();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [showTrailer, setShowTrailer] = useState(false);
+  const [imageError, setImageError] = useState<{[key: number]: boolean}>({});
 
   useEffect(() => {
     if (!isAutoPlaying) return;
@@ -33,6 +36,11 @@ const HeroCarousel: React.FC = () => {
     goToSlide((currentIndex + 1) % featuredFilms.length);
   };
 
+  const handleTrailerClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setShowTrailer(true);
+  };
+
   const currentFilm = featuredFilms[currentIndex];
 
   return (
@@ -47,13 +55,22 @@ const HeroCarousel: React.FC = () => {
         >
           {/* Video Background Placeholder - using image */}
           <div className="absolute inset-0">
-            <img
-              src={film.backdropUrl}
-              alt={film.title}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/30" />
+            {!imageError[film.id] ? (
+              <>
+                <img
+                  src={film.backdropUrl}
+                  alt={film.title}
+                  className="w-full h-full object-cover"
+                  onError={() => setImageError({...imageError, [film.id]: true})}
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/30" />
+              </>
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-br from-secondary to-card flex items-center justify-center">
+                <p className="text-center text-lg text-muted-foreground font-medium">{film.title}</p>
+              </div>
+            )}
           </div>
         </div>
       ))}
@@ -88,16 +105,10 @@ const HeroCarousel: React.FC = () => {
             </p>
             
             <div className="flex flex-wrap gap-4">
-              <a
-                href={currentFilm.trailerUrl.replace('embed/', 'watch?v=')}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button variant="hero" size="xl">
-                  <Play className="w-5 h-5 mr-2" fill="currentColor" />
-                  Watch Trailer
-                </Button>
-              </a>
+              <Button variant="hero" size="xl" onClick={handleTrailerClick}>
+                <Play className="w-5 h-5 mr-2" fill="currentColor" />
+                Watch Trailer
+              </Button>
               <Link to={`/film/${currentFilm.id}`}>
                 <Button variant="heroOutline" size="xl">
                   <Info className="w-5 h-5 mr-2" />
@@ -137,6 +148,14 @@ const HeroCarousel: React.FC = () => {
           />
         ))}
       </div>
+
+      {/* Video Modal */}
+      <VideoModal
+        isOpen={showTrailer}
+        title={`${currentFilm.title} - Trailer`}
+        videoUrl={currentFilm.trailerUrl}
+        onClose={() => setShowTrailer(false)}
+      />
     </section>
   );
 };

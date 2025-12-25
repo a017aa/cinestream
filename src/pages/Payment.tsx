@@ -44,12 +44,65 @@ const Payment: React.FC = () => {
     e.preventDefault();
     setIsProcessing(true);
 
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Basic client-side validation for card details
+    const cleanedNumber = cardNumber.replace(/\s+/g, '');
+    const cleanedCvv = cvv.replace(/\D/g, '');
 
-    setPremium(plan.charAt(0).toUpperCase() + plan.slice(1));
+    const isRepeatedDigits = /^([0-9])\1+$/.test(cleanedNumber);
+    const blacklisted = ['0000000000000000', '1234567812345678'];
+
+    const luhnCheck = (num: string) => {
+      let sum = 0;
+      let shouldDouble = false;
+      for (let i = num.length - 1; i >= 0; i--) {
+        let digit = parseInt(num.charAt(i), 10);
+        if (shouldDouble) {
+          digit *= 2;
+          if (digit > 9) digit -= 9;
+        }
+        sum += digit;
+        shouldDouble = !shouldDouble;
+      }
+      return sum % 10 === 0;
+    };
+
+    // expiry format MM/YY
+    const expiryMatch = expiryDate.match(/^(\d{2})\/(\d{2})$/);
+    let expiryValid = false;
+    if (expiryMatch) {
+      const month = parseInt(expiryMatch[1], 10);
+      const year = parseInt(expiryMatch[2], 10) + 2000;
+      if (month >= 1 && month <= 12) {
+        const exp = new Date(year, month - 1, 1);
+        const now = new Date();
+        // set to end of month
+        exp.setMonth(exp.getMonth() + 1);
+        exp.setDate(0);
+        expiryValid = exp >= now;
+      }
+    }
+
+    if (
+      !/^[0-9]{13,19}$/.test(cleanedNumber) ||
+      isRepeatedDigits ||
+      blacklisted.includes(cleanedNumber) ||
+      !luhnCheck(cleanedNumber) ||
+      !expiryValid ||
+      !/^[0-9]{3,4}$/.test(cleanedCvv) ||
+      !cardName.trim()
+    ) {
+      toast.error('Invalid card details — please check number, expiry, and CVV');
+      setIsProcessing(false);
+      return;
+    }
+
+    // Simulate payment processing
+    await new Promise(resolve => setTimeout(resolve, 1200));
+
+    const last4 = cleanedNumber.slice(-4);
+    setPremium(plan.charAt(0).toUpperCase() + plan.slice(1), last4);
     toast.success('Payment successful! Welcome to Premium!');
-    navigate('/');
+    navigate('/account');
     setIsProcessing(false);
   };
 
